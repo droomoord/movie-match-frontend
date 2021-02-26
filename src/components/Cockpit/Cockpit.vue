@@ -1,7 +1,12 @@
 <template>
   <div v-if="userIsLoggedIn" class="cockpit">
     <Navbar :user="user" @signout="$emit('signout')" />
-    <Matcher :user="user" :configuration="configuration" />
+    <Matcher
+      :user="user"
+      :configuration="configuration"
+      @setCachedMovie="setCachedMovie"
+      :cachedMovie="cachedMovie"
+    />
   </div>
 </template>
 
@@ -11,11 +16,16 @@ import Matcher from "./Matcher/Matcher";
 export default {
   name: "Cockpit",
   components: { Navbar, Matcher },
-  props: ["user", "configuration"],
+  props: ["user", "configuration", "cachedMovie"],
   mounted() {
     if (!this.userIsLoggedIn) {
       this.$router.push("/");
     }
+  },
+  methods: {
+    setCachedMovie: function(movie) {
+      this.$emit("setCachedMovie", movie);
+    },
   },
   computed: {
     userIsLoggedIn: function() {
@@ -27,8 +37,7 @@ export default {
 
 <style>
 .cockpit {
-  background-color: rgb(191, 191, 191);
   width: 100vw;
-  height: 100vh;
+  min-height: -webkit-fill-available;
 }
 </style>

@@ -1,30 +1,37 @@
 <template>
   <div>
     <Loader v-if="loading"> </Loader>
-    <div class="matcher" v-if="!info && !loading">
-      <div class="content-wrapper">
-        <div class="poster swiper-container">
-          <div class="swiper-wrapper">
-            <div class="swiper-slide">
-              <img
-                class="poster"
-                ref="poster"
-                @click="clickedPoster($event)"
-                :id="movie.id"
-                v-if="movie.poster_path"
-                v-bind:src="posterSource"
-                alt=""
-              />
-            </div>
-            <div class="test swiper-slide"></div>
-          </div>
-        </div>
+    <div class="matcher">
+      <div
+        v-if="!info && !loading"
+        class="content-wrapper"
+        v-touch:swipe="swiped"
+        v-touch:tap="clickedPoster"
+        v-touch:moving="touchMoving"
+        v-touch:start="touchStart"
+        v-touch:end="touchEnd"
+      >
+        <img
+          class="poster"
+          ref="poster"
+          @click="clickedPoster"
+          v-if="movie.poster_path"
+          v-bind:src="posterSource"
+          alt=""
+        />
+
         <div class="text-wrapper">
           <h1 class="title" v-if="movie.title">{{ movie.title }}</h1>
-          <p class="overview" v-if="movie.overview">{{ movie.overview }}</p>
+          <p class="overview" v-if="movie.overview">
+            <span class="inline-title"
+              >{{ movie.title }} ({{ releaseYear }})</span
+            >
+            {{ movie.overview }}
+          </p>
         </div>
       </div>
-      <div class="icons">
+
+      <div class="icons" v-if="!info">
         <b-icon
           @click="rate('dislikes')"
           ref="x"
@@ -59,11 +66,12 @@
       @close="info = false"
       :configuration="configuration"
       :movie="movieDetails"
+      :backdropSource="backdropSource"
     >
     </Info>
-    <Modal v-if="matches" @close="closeMatchModal()">
-      You've got a match for the movie
-      <strong>{{ this.movie.title }}</strong> with:
+    <Modal v-if="matches.length > 0" @close="closeMatchModal()">
+      You've got a match! <br />
+      Go, and watch <strong>{{ this.movie.title }}</strong> with:
       <ul>
         <li v-for="match in matches" :key="match.friend.id">
           {{ match.friend.name }}
@@ -75,20 +83,16 @@
 
 <script>
 import moment from "moment";
-import fetchMovieData from "../../functions/fetchMovieData";
 import fetchServerData from "../../functions/fetchServerData";
 import Info from "./Info/Info";
 import Loader from "../../utility/Loader";
 import Modal from "../../utility/Modal";
-import Swiper from "swiper";
-import "swiper/swiper-bundle.css";
-
-const swiper = new Swiper(".swiper-container", {});
 
 export default {
   name: "Matcher",
   mounted() {
-    this.randomMovie();
+    if (Object.keys(this.cachedMovie).length === 0) this.randomMovie();
+    else this.movie = this.cachedMovie;
   },
   data() {
     return {
@@ -96,26 +100,61 @@ export default {
       info: false,
       movieDetails: {},
       loading: false,
-      matches: null,
-      swiper,
+      matches: [],
+      swipeStart: null,
+      swipeEnd: null,
     };
   },
-  props: ["user", "configuration"],
+  props: ["user", "configuration", "cachedMovie"],
   components: { Info, Loader, Modal },
 
   methods: {
-    clickedPoster: function(event) {
-      this.info = true;
-      this.getInfo(event.currentTarget.id);
-      this.preloadBackdrop;
+    touchMoving: function(e) {
+      this.swipeEnd = e.touches[0].clientX;
+      const x = this.swipeEnd - this.swipeStart;
+
+      this.$refs.poster.style.transform = `translateX(${Math.round(x)}px)`;
+    },
+    touchStart: function(e) {
+      this.swipeStart = e.touches[0].clientX;
+    },
+    touchEnd: function() {
+      this.$refs.poster.style.transform = "none";
+
+      this.swipeStart = null;
+      this.swipeEnd = null;
+    },
+    swiped(e) {
+      switch (e) {
+        case "left":
+          this.rate("dislikes");
+          break;
+        case "right":
+          this.rate("likes");
+          break;
+
+        default:
+          break;
+      }
     },
 
+    clickedPoster: function() {
+      this.info = true;
+
+      this.getInfo(this.movie.id);
+      this.preloadBackdrop;
+    },
+    tapped: function() {
+      console.log("tapped!");
+
+      this.info = true;
+    },
     getInfo: async function(id) {
       try {
         if (this.movieDetails.id != this.movie.id) {
-          const api = await fetchMovieData("get", `/movie/${id}`);
-          this.movieDetails = api.data;
-          console.log(api.data);
+          const api = await fetchServerData("get", `/movie/single/${id}`);
+          const { movie } = api.data;
+          this.movieDetails = movie;
         }
       } catch (error) {
         console.log(error);
@@ -137,20 +176,23 @@ export default {
         console.log(
           `Looking for a movie with release date between ${dateMin} and ${dateMax}`
         );
-        // &without_genres=14,18
-        const api = await fetchMovieData(
-          "get",
-          `/discover/movie?vote_average.gte=6&vote_count.gte=1000&primary_release_date.gte=${dateMin}&primary_release_date.lte=${dateMax}`
-        );
-        const chosenMovie =
-          api.data.results[Math.floor(api.data.results.length * Math.random())];
+
+        const api = await fetchServerData("post", "/movie/random", {
+          query: `/discover/movie?vote_average.gte=7.5&vote_count.gte=1000&primary_release_date.gte=${dateMin}&primary_release_date.lte=${dateMax}`,
+        });
+        console.log("API.DATA", api.data);
+
+        const { chosenMovie } = api.data;
+
         // const chosenMovie = api.data.results[0];
         chosenMovie.id = chosenMovie.id.toString();
         if (
-          this.user.dislikes.includes(chosenMovie.id) ||
-          this.user.seen.includes(chosenMovie.id) ||
-          this.user.favourites.includes(chosenMovie.id) ||
-          this.user.likes.includes(chosenMovie.id)
+          this.user.dislikes.some((dislike) => dislike.id === chosenMovie.id) ||
+          this.user.seen.some((seen) => seen.id === chosenMovie.id) ||
+          this.user.favourites.some(
+            (favourite) => favourite.id === chosenMovie.id
+          ) ||
+          this.user.likes.some((like) => like.id === chosenMovie.id)
         ) {
           setTimeout(() => {
             console.log(
@@ -161,6 +203,8 @@ export default {
         } else {
           this.loading = false;
           this.movie = chosenMovie;
+          this.$emit("setCachedMovie", chosenMovie);
+          // this.clientX = null;
           console.log(this.movie);
         }
       } catch (error) {
@@ -169,16 +213,28 @@ export default {
     },
     rate: async function(type) {
       try {
+        switch (type) {
+          case "dislikes":
+            this.$refs.poster.classList.add("move-left");
+            break;
+          case "likes":
+            this.$refs.poster.classList.add("move-right");
+            break;
+          default:
+            break;
+        }
         console.log(this.movie);
 
-        const api = await fetchServerData(
-          "post",
-          `/rate/${type}/${this.movie.id}`
-        );
+        const api = await fetchServerData("post", `/rate/${type}`, {
+          movie: {
+            title: this.movie.title,
+            id: this.movie.id,
+          },
+        });
         if (api.status === 200) {
           this.user[type].push(this.movie.id);
           console.log(`Succesfully added to ${type} `);
-          if (api.data.matches.length > 0) {
+          if (api.data.matches && api.data.matches.length > 0) {
             this.matches = api.data.matches;
           } else {
             this.randomMovie();
@@ -196,7 +252,7 @@ export default {
       }
     },
     closeMatchModal: function() {
-      this.matches = null;
+      this.matches = [];
       this.randomMovie();
     },
   },
@@ -208,24 +264,70 @@ export default {
         this.movie.poster_path
       );
     },
+    backdropSource() {
+      if (this.movie.backdrop_path) {
+        return (
+          this.configuration.TMDB.images.secure_base_url +
+          "w1280" +
+          this.movie.backdrop_path
+        );
+      } else {
+        return null;
+      }
+    },
+
+    releaseYear() {
+      const regex = /^..../;
+      return regex.exec(this.movie.release_date)[0];
+    },
   },
 };
 </script>
 
 <style scoped>
-.matcher {
-  width: 100%;
-}
-.content-wrapper {
-  width: 100%;
-}
-.poster {
-  width: 100%;
-}
-.test {
-  background-color: red;
-  width: 100vw;
-  height: 100vh;
+@media only screen and (max-width: 600px) {
+  .matcher {
+    width: 100%;
+    height: 100%;
+  }
+  .content-wrapper {
+    height: 80vh;
+    overflow: hidden;
+  }
+  .poster {
+    width: 100vw;
+    position: fixed;
+    top: 56px;
+    left: 0;
+    max-height: 80vh;
+    z-index: -1;
+    /* animation-name: slide-down;
+    animation-duration: 0.5s; */
+    transition: transform 0.15s;
+  }
+  .move-left {
+    transform: translateX(-100%) !important;
+  }
+  .move-right {
+    transform: translateX(100%) !important;
+  }
+  .text-wrapper {
+    display: none;
+  }
+
+  .icons {
+    position: fixed;
+    bottom: 10px;
+    left: 0;
+    display: flex;
+    flex-direction: row;
+    width: 100vw;
+    justify-content: space-around;
+  }
+  .icons .b-icon {
+    width: 50px;
+    height: 50px;
+  }
 }
 
 @media only screen and (min-width: 601px) {
@@ -234,8 +336,10 @@ export default {
     width: 800px;
     margin: auto;
     margin-top: 20px;
-    background-color: white;
     height: 80vh;
+  }
+  .text-wrapper {
+    z-index: 1;
   }
   .content-wrapper {
     display: flex;
@@ -257,6 +361,7 @@ export default {
     font-family: "Broadway", Broadway;
     font-size: 3em;
   }
+
   .overview {
     line-height: 35px;
     font-size: 1.1em;
@@ -298,6 +403,15 @@ export default {
   }
   .disliked {
     visibility: hidden;
+  }
+}
+
+@keyframes slide-down {
+  from {
+    top: -100vh;
+  }
+  to {
+    top: 56px;
   }
 }
 </style>

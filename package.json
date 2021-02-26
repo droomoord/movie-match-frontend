@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "build": "vue-cli-service build --dest ../server/src/static",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
@@ -13,9 +13,9 @@
     "bootstrap-vue": "^2.21.2",
     "core-js": "^3.6.5",
     "moment": "^2.29.1",
-    "swiper": "^6.4.14",
     "vue": "^2.6.11",
-    "vue-router": "^3.4.9"
+    "vue-router": "^3.4.9",
+    "vue2-touch-events": "^3.2.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",

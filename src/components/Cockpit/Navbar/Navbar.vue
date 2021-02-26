@@ -1,7 +1,7 @@
 <template>
   <div>
     <div>
-      <b-navbar type="dark" variant="primary">
+      <b-navbar type="dark" variant="primary" fixed="top">
         <b-navbar-brand href="#/rate">MovieMatch</b-navbar-brand>
         <b-navbar-nav class="ml-auto">
           <b-nav-item-dropdown right>

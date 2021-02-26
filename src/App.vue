@@ -6,14 +6,12 @@
       @signout="signout"
       :socket="socket"
       :configuration="configuration"
+      @setCachedMovie="setCachedMovie"
+      :cachedMovie="cachedMovie"
+      @declineRequest="declineRequest"
+      :key="reload"
     />
-    <Modal
-      @close="
-        modal = false;
-        modalUser = {};
-      "
-      v-if="modal"
-    >
+    <Modal @close="closeModal" v-if="modal">
       <div v-if="modalType === 'request'">
         <h4>You have a new request!</h4>
         <p>
@@ -23,7 +21,12 @@
             @click="acceptRequest($event)"
             variant="outline-success"
             >Accept</b-button
-          ><b-button variant="outline-danger">Decline</b-button>
+          ><b-button
+            :id="modalUser.id"
+            @click="declineRequest($event)"
+            variant="outline-danger"
+            >Decline</b-button
+          >
         </p>
       </div>
       <div v-if="modalType === 'accept'">
@@ -35,7 +38,6 @@
 
 <script>
 import fetchServerData from "./components/functions/fetchServerData";
-import fetchMovieData from "./components/functions/fetchMovieData";
 import Modal from "./components/utility/Modal";
 export default {
   name: "App",
@@ -47,11 +49,25 @@ export default {
       modalUser: {},
       socket: null,
       configuration: {},
+      cachedMovie: {},
+      reload: 0,
     };
   },
 
   components: { Modal },
   methods: {
+    closeModal: function() {
+      this.modal = false;
+      this.modalUser = {};
+      setTimeout(() => {
+        this.reload++;
+      }, 300);
+    },
+
+    setCachedMovie: function(movie) {
+      this.cachedMovie = movie;
+    },
+
     login: function(user) {
       console.log(user);
       this.user = user;
@@ -104,11 +120,28 @@ export default {
         // console.log(error.response.data.message);
         // this.error = error.response.data.message
       }
+      setTimeout(() => {
+        this.reload++;
+      }, 300);
+    },
+    declineRequest: async function(event) {
+      try {
+        const api = await fetchServerData(
+          "post",
+          `/connect/decline/${event.currentTarget.id}`
+        );
+        this.modal = false;
+        console.log(api.data);
+      } catch (error) {
+        console.log(error);
+      }
     },
 
     wsConnect() {
       console.log("Initiating ws connect...");
-      this.socket = new WebSocket("ws://192.168.178.21:3000");
+      this.socket = new WebSocket(
+        `ws://${process.env.VUE_APP_SERVER_LOCATION}`
+      );
       this.socket.onopen = () => {
         this.socket.send(
           JSON.stringify({
@@ -130,15 +163,19 @@ export default {
             break;
           case "newRequest":
             console.log(data.sender);
-            this.modal = true;
-            this.modalType = "request";
-            this.modalUser = data.sender;
+            if (!this.modal) {
+              this.modal = true;
+              this.modalType = "request";
+              this.modalUser = data.sender;
+            }
             break;
           case "accept":
-            this.newAccept = data.sender;
-            this.modal = true;
-            this.modalType = "accept";
-            this.modalUser = data.sender;
+            if (!this.modal) {
+              this.newAccept = data.sender;
+              this.modal = true;
+              this.modalType = "accept";
+              this.modalUser = data.sender;
+            }
             break;
         }
       };
@@ -156,25 +193,14 @@ export default {
     },
     getConfigurationTMDB: async function() {
       try {
-        const api = await fetchMovieData("get", "/configuration");
-        this.configuration.TMDB = api.data;
+        const api = await fetchServerData("get", "/movie/configuration");
+        console.log("CONFIG", api.data);
+        this.configuration.TMDB = api.data.configuration;
       } catch (error) {
         console.log(error);
       }
     },
 
-    // getFriendRequests: async function() {
-    //   try {
-    //     const api = await fetchServerData("get", "/connect/requests");
-    //     if (this.receivedRequests.length < api.data.receivedRequests.length) {
-    //       this.receivedRequests = api.data.receivedRequests;
-    //       this.modal = true;
-    //     }
-    //     console.log(this.receivedRequests);
-    //   } catch (error) {
-    //     console.log(error);
-    //   }
-    // },
     signout: function() {
       this.user = {};
       localStorage.removeItem("user-id");
@@ -185,13 +211,15 @@ export default {
   },
 
   mounted() {
-    const token = localStorage.getItem("user-token");
-    const user = localStorage.getItem("user-id");
-    if (token && user) {
-      this.getUser(user);
-    } else {
-      this.$router.push({ path: "/" });
-    }
+    setTimeout(() => {
+      const token = localStorage.getItem("user-token");
+      const user = localStorage.getItem("user-id");
+      if (token && user) {
+        this.getUser(user);
+      } else if (this.$router.history.current.path !== "/") {
+        this.$router.push({ path: "/" });
+      }
+    }, 1000);
   },
 };
 </script>

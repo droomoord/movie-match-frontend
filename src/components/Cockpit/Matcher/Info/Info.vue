@@ -1,14 +1,35 @@
 <template>
   <div>
     <Loader v-if="loading"> </Loader>
-    <!-- <b-spinner label="Spinning" v-if="loading"></b-spinner> -->
-    <div class="info" v-show="loading === false">
-      <img :src="backdropSource" class="backdrop" @load="loading = false" />
+    <div class="info" v-show="loading === false" v-touch:tap="close">
+      <img
+        :src="backdropSource"
+        class="backdrop-image desktop"
+        @load="loading = false"
+      />
+      <img
+        ref="backdropMobile"
+        class="backdrop-image mobile"
+        @load="loading = false"
+      />
       <div class="filter"></div>
       <!-- <button class="x" style="float: right;" @click="$emit('close')">X</button> -->
       <!-- <img class="poster" @click="$emit('close')" :src="posterSource" alt="" /> -->
       <div class="text">
         <ul class="list">
+          <li>
+            <a
+              :href="'https://www.imdb.com/title/' + movie.imdb_id"
+              target="_blank"
+              >View on IMDB</a
+            >
+            <a
+              :href="'https://www.themoviedb.org/movie/' + movie.id"
+              target="_blank"
+              >View on TMDB</a
+            >
+          </li>
+          <div></div>
           <li>
             Original title:
           </li>
@@ -79,19 +100,9 @@
           <li>
             <strong>{{ movie.popularity }}</strong>
           </li>
-          <li>
-            <a
-              :href="'https://www.imdb.com/title/' + movie.imdb_id"
-              target="_blank"
-              >View on IMDB</a
-            >
-            <a
-              :href="'https://www.themoviedb.org/movie/' + movie.id"
-              target="_blank"
-              >View on TMDB</a
-            >
-          </li>
         </ul>
+        <h4>Overview</h4>
+        <p>{{ movie.overview }}</p>
         <!-- <a
             :href="
               'https://www.imdb.com/video/vi604089881?playlistId=' +
@@ -102,7 +113,7 @@
             >Watch trailer</a
           > -->
       </div>
-      <b-button @click="$emit('close')">
+      <b-button @click="close" class="back">
         Back
       </b-button>
     </div>
@@ -113,7 +124,7 @@
 import Loader from "../../../utility/Loader";
 export default {
   name: "info",
-  props: ["configuration", "movie"],
+  props: ["configuration", "movie", "backdropSource"],
   components: {
     Loader,
   },
@@ -122,114 +133,173 @@ export default {
       loading: true,
     };
   },
-  mounted() {},
+  mounted() {
+    console.log(this.backdropSource);
 
-  methods: {},
-  computed: {
-    backdropSource() {
-      if (this.movie.backdrop_path) {
-        return (
-          this.configuration.TMDB.images.secure_base_url +
-          "w1280" +
-          this.movie.backdrop_path
-        );
-      } else {
-        return null;
-      }
+    this.$refs.backdropMobile.style.backgroundImage = `url(${this.backdropSource})`;
+  },
+
+  methods: {
+    close: function() {
+      this.$emit("close");
     },
   },
 };
 </script>
 
 <style scoped>
-/* .x {
-  position: absolute;
-  top: 0;
-  right: 0;
-  border-radius: 50%;
-  padding: 5px 9px;
-} */
-.info {
-  /* background-color: rgb(177, 177, 177) !important; */
-  padding: 20px;
-  position: fixed;
-  /* border: 1px solid black; */
-  width: 80vw;
-  /* height: 80vh; */
-  top: 10vh;
-  left: 10vw;
+@media only screen and (max-width: 600px) {
+  ul {
+    padding-left: 0;
+  }
 
-  display: flex;
-}
-.backdrop {
-  position: absolute;
-  width: 80vw;
-  height: 100%;
-  top: 0;
-  left: 0;
-  z-index: -2;
-}
-.filter {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  z-index: -1;
-  background-image: linear-gradient(
-    rgba(255, 255, 255, 0.502),
-    rgba(255, 255, 255, 0.523)
-  );
-}
+  li {
+    list-style: none;
+  }
 
-.text {
-  padding: 5px;
-  margin: auto;
-  font-size: 1.3em;
-  text-shadow: 1px 1px 2px rgb(223, 223, 223);
+  a {
+    display: block;
+  }
+  .back {
+    display: none;
+  }
+  .tag {
+    background-color: rgb(216, 216, 216);
+    border: 1px solid black;
+    margin-right: 4px;
+    padding: 3px 8px;
+    display: inline-block;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+  .list {
+    margin-top: 60px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    row-gap: 10px;
+    /* padding-left: 30px; */
+  }
+  .info {
+    width: 100vw;
+    height: 100vh;
+    /* overflow: hidden; */
+  }
+  .backdrop-image {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-position: center;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+  }
+  .filter {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    background-color: rgba(255, 255, 255, 0.756);
+  }
+  .text {
+    padding: 20px;
+    width: 100vw;
+    display: block;
+    text-shadow: 1px 1px 5px white;
 
-  color: rgb(31, 30, 30);
-  /* text-shadow: 1px 1px 1px rgb(85, 13, 85); */
-}
-
-/* .poster {
-  height: 80vh;
-  cursor: pointer;
-} */
-.list {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 10px;
-  padding-left: 30px;
-}
-ul {
-  padding-left: 0;
-}
-
-.list > *:nth-child(odd) {
-  text-align: end;
-}
-
-li {
-  list-style: none;
+    z-index: 1;
+  }
+  .desktop {
+    display: none;
+  }
 }
 
-a {
-  display: block;
-}
+@media all and (min-width: 601px) {
+  ul {
+    padding-left: 0;
+  }
 
-.tag {
-  background-color: rgb(216, 216, 216);
-  border: 1px solid black;
-  margin-right: 4px;
-  padding: 3px 8px;
-  display: inline;
-  border-radius: 10px;
-  white-space: nowrap;
-}
-.btn {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
+  .list > *:nth-child(odd) {
+    text-align: end;
+  }
+
+  li {
+    list-style: none;
+  }
+
+  a {
+    display: block;
+  }
+
+  .tag {
+    background-color: rgb(216, 216, 216);
+    border: 1px solid black;
+    margin-right: 4px;
+    padding: 3px 8px;
+    display: inline-block;
+    border-radius: 10px;
+    white-space: nowrap;
+  }
+  .list {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 10px;
+    padding-left: 30px;
+  }
+  .mobile {
+    display: none;
+  }
+  .desktop {
+    display: block;
+  }
+  .info {
+    padding: 20px;
+    position: fixed;
+
+    width: 100vw;
+    height: 56vw;
+
+    /* left: 10vw; */
+    top: 10vh;
+
+    display: flex;
+  }
+
+  .backdrop-image {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: -2;
+  }
+  .filter {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    background-image: linear-gradient(
+      rgba(255, 255, 255, 0.502),
+      rgba(255, 255, 255, 0.523)
+    );
+  }
+
+  .text {
+    padding: 5px;
+    margin: auto;
+    font-size: 1.3em;
+    text-shadow: 1px 1px 2px rgb(223, 223, 223);
+
+    color: rgb(31, 30, 30);
+  }
+
+  .btn {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+  }
 }
 </style>

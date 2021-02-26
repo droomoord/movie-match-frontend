@@ -1,9 +1,46 @@
 <template>
   <div>
     <b-jumbotron>
-      <h1>The Landing Page</h1>
-      <p>Some nice images here...</p>
-      <router-link to="/rate">Start</router-link>
+      <h1>MovieMatcher</h1>
+      <p>
+        Tof dat je de eerste versie van moviematcher wilt testen! Als het goed
+        is kan je al:
+      </p>
+      <p></p>
+      <ul>
+        <li>Een account aanmaken</li>
+        <li>Vrienden toevoegen</li>
+        <li>
+          Films beoordelen. Als je gaat voor het hartje (swipe naar rechts op
+          mobiel) dan wordt er gekeken of je een match met een vriend hebt.
+          Swipe naar links als je wilt disliken.
+        </li>
+        <li>
+          Klik op je naam en ga naar 'friends' en kijk met welke vrienden je
+          welke films kunt kijken.
+        </li>
+      </ul>
+      <p>
+        Wat nog niet werkt:
+      </p>
+      <ul>
+        <li>
+          Je kunt ook aangeven dat je de film al gezien hebt (oog met streep er
+          doorheen), of je kunt de film aan je favourites toevoegen (gele ster).
+          Op dit moment is daar nog geen functie aan verbonden
+        </li>
+      </ul>
+      <p>
+        Check even of er geen foutjes tot nu toe inzitten.
+      </p>
+      <ul>
+        <li>
+          Als het goed is kan je een film maar 1 keer raten, daarna komt ie niet
+          meer voobij
+        </li>
+        <li>Check of vrienden toevoegen goed werkt</li>
+        <li>Designfoutjes zullen er ook misschien wel inzitten</li>
+      </ul>
     </b-jumbotron>
     <b-container>
       <b-alert fade variant="danger" :show="errorMessage !== ''">
@@ -107,12 +144,16 @@ export default {
             password,
           };
           const api = await fetchServerData("post", "/auth/register", data);
-          localStorage.setItem("user-token", api.data.tokens.access.token);
-          this.$emit("login", api.data.user);
+          if (api.status === 201) {
+            localStorage.setItem("user-token", api.data.tokens.access.token);
+            this.$emit("login", api.data.user);
+          } else {
+            console.log(api);
+            if (api.data.message) this.displayError(api.data.message);
+          }
         }
       } catch (error) {
-        console.log(error.response.data);
-        this.displayError(error.response.data.message);
+        console.log(error.message);
       }
     },
     submitLogin: async function() {
@@ -124,10 +165,15 @@ export default {
       };
       try {
         const api = await fetchServerData("post", "/auth/login", data);
-        localStorage.setItem("user-token", api.data.tokens.access.token);
-        this.$emit("login", api.data.user);
+        if (api.status === 200) {
+          localStorage.setItem("user-token", api.data.tokens.access.token);
+          this.$emit("login", api.data.user);
+        } else {
+          console.log(api.data.message);
+          if (api.data.message) this.displayError(api.data.message);
+        }
       } catch (error) {
-        this.displayError(error.response.data.message);
+        console.log(error.message);
       }
     },
     displayError: function(message) {
