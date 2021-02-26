@@ -178,7 +178,7 @@ export default {
         );
 
         const api = await fetchServerData("post", "/movie/random", {
-          query: `/discover/movie?vote_average.gte=7.5&vote_count.gte=1000&primary_release_date.gte=${dateMin}&primary_release_date.lte=${dateMax}`,
+          query: `/discover/movie?vote_average.gte=6&vote_count.gte=1000&primary_release_date.gte=${dateMin}&primary_release_date.lte=${dateMax}`,
         });
         console.log("API.DATA", api.data);
 
