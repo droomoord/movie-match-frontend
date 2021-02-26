@@ -139,9 +139,11 @@ export default {
 
     wsConnect() {
       console.log("Initiating ws connect...");
-      this.socket = new WebSocket(
-        `ws://${process.env.VUE_APP_SERVER_LOCATION}`
-      );
+      let WSlocation;
+      if (process.env.VUE_APP_ENVIRONMENT === "local")
+        WSlocation = process.env.VUE_APP_WS_LOCAL_HOST;
+      else WSlocation = "";
+      this.socket = new WebSocket(WSlocation);
       this.socket.onopen = () => {
         this.socket.send(
           JSON.stringify({
