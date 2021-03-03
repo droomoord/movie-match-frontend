@@ -1,9 +1,8 @@
 <template>
   <div>
     <Loader v-if="loading"> </Loader>
-    <div class="matcher">
+    <div class="matcher" v-if="!info && !loading">
       <div
-        v-if="!info && !loading"
         class="content-wrapper"
         v-touch:swipe="swiped"
         v-touch:tap="clickedPoster"
@@ -355,6 +354,11 @@ export default {
     flex-direction: column;
     justify-content: space-around;
     overflow: scroll;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .text-wrapper::-webkit-scrollbar {
+    display: none;
   }
   .title {
     text-align: center;

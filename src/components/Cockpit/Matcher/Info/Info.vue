@@ -114,6 +114,7 @@
           > -->
       </div>
       <b-button @click="close" class="back">
+        <b-icon-arrow-left-short></b-icon-arrow-left-short>
         Back
       </b-button>
     </div>
@@ -189,6 +190,7 @@ export default {
     top: 0;
     left: 0;
     background-position: center;
+    background-repeat: no-repeat;
     width: 100vw;
     height: 100vh;
     z-index: -1;
@@ -255,51 +257,55 @@ export default {
   }
   .info {
     padding: 20px;
-    position: fixed;
-
+    /* position: fixed; */
     width: 100vw;
-    height: 56vw;
+    height: 100vh;
 
     /* left: 10vw; */
-    top: 10vh;
+    top: 56px;
 
     display: flex;
   }
 
   .backdrop-image {
-    position: absolute;
-    width: 100%;
-    height: 100%;
+    position: fixed;
+    width: 178vh;
+    min-width: 100vw;
+    height: 100vh;
+    min-height: 716px;
     top: 0;
     left: 0;
     z-index: -2;
   }
   .filter {
     position: absolute;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     top: 0;
     left: 0;
     z-index: -1;
-    background-image: linear-gradient(
-      rgba(255, 255, 255, 0.502),
-      rgba(255, 255, 255, 0.523)
-    );
+    background-color: rgba(255, 255, 255, 0.756);
   }
 
   .text {
     padding: 5px;
-    margin: auto;
+    /* margin: auto; */
+    margin-top: 56px;
     font-size: 1.3em;
     text-shadow: 1px 1px 2px rgb(223, 223, 223);
-
+    overflow: scroll;
     color: rgb(31, 30, 30);
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .text::-webkit-scrollbar {
+    display: none;
   }
 
   .btn {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
+    position: fixed;
+    top: 76px;
+    left: 20px;
   }
 }
 </style>

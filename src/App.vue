@@ -141,8 +141,12 @@ export default {
       console.log("Initiating ws connect...");
       let WSlocation;
       if (process.env.VUE_APP_ENVIRONMENT === "local")
-        WSlocation = process.env.VUE_APP_WS_LOCAL_HOST;
-      else WSlocation = "";
+        WSlocation = process.env.VUE_APP_LOCAL_WS;
+      else {
+        const regex = /.*\/\/([\w.-]*)/;
+        const url = window.location.href;
+        WSlocation = "wss://" + regex.exec(url)[1] + ":8081";
+      }
       this.socket = new WebSocket(WSlocation);
       this.socket.onopen = () => {
         this.socket.send(
