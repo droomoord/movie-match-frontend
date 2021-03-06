@@ -211,6 +211,8 @@ export default {
       this.user = {};
       localStorage.removeItem("user-id");
       localStorage.removeItem("user-token");
+      this.cachedMovie = {};
+      this.configuration = {};
       this.socket.close();
       this.$router.push({ path: "/" });
     },

@@ -1,7 +1,7 @@
 <template>
   <div>
     <Loader v-if="loading"> </Loader>
-    <div class="info" v-show="loading === false" v-touch:tap="close">
+    <div class="info" v-show="loading === false">
       <img
         :src="backdropSource"
         class="backdrop-image desktop"
@@ -15,21 +15,8 @@
       <div class="filter"></div>
       <!-- <button class="x" style="float: right;" @click="$emit('close')">X</button> -->
       <!-- <img class="poster" @click="$emit('close')" :src="posterSource" alt="" /> -->
-      <div class="text">
+      <div class="text" v-touch:tap="close">
         <ul class="list">
-          <li>
-            <a
-              :href="'https://www.imdb.com/title/' + movie.imdb_id"
-              target="_blank"
-              >View on IMDB</a
-            >
-            <a
-              :href="'https://www.themoviedb.org/movie/' + movie.id"
-              target="_blank"
-              >View on TMDB</a
-            >
-          </li>
-          <div></div>
           <li>
             Original title:
           </li>
@@ -42,6 +29,10 @@
           <li v-if="movie.tagline">
             <strong>"{{ movie.tagline }}"</strong>
           </li>
+        </ul>
+        <h4>Overview</h4>
+        <p>{{ movie.overview }}</p>
+        <ul class="list">
           <li>
             Genres:
           </li>
@@ -101,8 +92,7 @@
             <strong>{{ movie.popularity }}</strong>
           </li>
         </ul>
-        <h4>Overview</h4>
-        <p>{{ movie.overview }}</p>
+
         <!-- <a
             :href="
               'https://www.imdb.com/video/vi604089881?playlistId=' +
@@ -112,11 +102,24 @@
             target="_blank"
             >Watch trailer</a
           > -->
+
+        <div class="links">
+          <a
+            :href="'https://www.imdb.com/title/' + movie.imdb_id"
+            target="_blank"
+            >View on IMDB</a
+          >
+          <a
+            :href="'https://www.themoviedb.org/movie/' + movie.id"
+            target="_blank"
+            >View on TMDB</a
+          >
+        </div>
       </div>
-      <b-button @click="close" class="back">
+      <button @click="close" class="back">
         <b-icon-arrow-left-short></b-icon-arrow-left-short>
-        Back
-      </b-button>
+        <!-- Back -->
+      </button>
     </div>
   </div>
 </template>
@@ -157,10 +160,19 @@ export default {
   li {
     list-style: none;
   }
-
-  a {
-    display: block;
+  .links {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    width: 100%;
+    text-shadow: none;
+    font-weight: bold;
+    color: #007bff;
   }
+  .links a {
+    z-index: 100;
+  }
+
   .back {
     display: none;
   }
@@ -189,8 +201,9 @@ export default {
     position: fixed;
     top: 0;
     left: 0;
-    background-position: center;
+    background-position: top;
     background-repeat: no-repeat;
+    background-size: cover;
     width: 100vw;
     height: 100vh;
     z-index: -1;
@@ -229,9 +242,14 @@ export default {
   li {
     list-style: none;
   }
-
-  a {
-    display: block;
+  .links {
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    width: 100%;
+    text-shadow: none;
+    font-weight: bold;
+    color: #007bff;
   }
 
   .tag {
@@ -256,7 +274,7 @@ export default {
     display: block;
   }
   .info {
-    padding: 20px;
+    padding: 0 100px;
     /* position: fixed; */
     width: 100vw;
     height: 100vh;
@@ -284,7 +302,13 @@ export default {
     top: 0;
     left: 0;
     z-index: -1;
-    background-color: rgba(255, 255, 255, 0.756);
+    background: rgba(255, 255, 255, 0.721);
+    background: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.7) 40%,
+      rgba(255, 255, 255, 0.4) 70%,
+      rgba(255, 255, 255, 0) 100%
+    );
   }
 
   .text {
@@ -302,10 +326,38 @@ export default {
     display: none;
   }
 
-  .btn {
+  .back {
     position: fixed;
-    top: 76px;
+    bottom: 20px;
     left: 20px;
+    border-radius: 50%;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    outline: none;
+    border: 3px solid rgb(11, 11, 148);
+    color: rgb(11, 11, 148);
+    background-color: #007bff;
+    font-size: 70px;
+  }
+  .back:hover {
+    background-color: #046bd8;
+  }
+  .back:hover svg {
+    animation-name: move-left;
+    animation-duration: 0.3s;
+    animation-iteration-count: 2;
+    animation-delay: 0.15s;
+  }
+  @keyframes move-left {
+    from {
+      transform: none;
+    }
+    to {
+      transform: translateX(-5px);
+    }
   }
 }
 </style>

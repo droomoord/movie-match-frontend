@@ -37,6 +37,11 @@ export default {
   animation-fill-mode: forwards;
   border-radius: 2%;
   overflow: scroll;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+._modal::-webkit-scrollbar {
+  display: none;
 }
 
 svg {

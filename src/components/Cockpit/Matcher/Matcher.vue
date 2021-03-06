@@ -42,7 +42,7 @@
 
         <b-icon
           @click="rate('seen')"
-          icon="eye-slash-fill"
+          icon="eye-fill"
           variant="primary"
           font-scale="5"
         ></b-icon>
@@ -139,13 +139,10 @@ export default {
 
     clickedPoster: function() {
       this.info = true;
-
       this.getInfo(this.movie.id);
-      this.preloadBackdrop;
+      // this.preloadBackdrop;
     },
     tapped: function() {
-      console.log("tapped!");
-
       this.info = true;
     },
     getInfo: async function(id) {
@@ -177,29 +174,34 @@ export default {
         );
 
         const api = await fetchServerData("post", "/movie/random", {
-          query: `/discover/movie?vote_average.gte=6&vote_count.gte=1000&primary_release_date.gte=${dateMin}&primary_release_date.lte=${dateMax}`,
+          query: `/discover/movie?vote_average.gte=8&vote_count.gte=1000&primary_release_date.gte=${dateMin}&primary_release_date.lte=${dateMax}`,
         });
-        console.log("API.DATA", api.data);
-
-        const { chosenMovie } = api.data;
 
         // const chosenMovie = api.data.results[0];
-        chosenMovie.id = chosenMovie.id.toString();
-        if (
-          this.user.dislikes.some((dislike) => dislike.id === chosenMovie.id) ||
-          this.user.seen.some((seen) => seen.id === chosenMovie.id) ||
-          this.user.favourites.some(
-            (favourite) => favourite.id === chosenMovie.id
-          ) ||
-          this.user.likes.some((like) => like.id === chosenMovie.id)
-        ) {
+
+        // if (
+        //   this.user.dislikes.some((dislike) => dislike.id === chosenMovie.id) ||
+        //   this.user.seen.some((seen) => seen.id === chosenMovie.id) ||
+        //   this.user.favourites.some(
+        //     (favourite) => favourite.id === chosenMovie.id
+        //   ) ||
+        //   this.user.likes.some((like) => like.id === chosenMovie.id)
+        // ) {
+        //   setTimeout(() => {
+        //     console.log(
+        //       "!!!Already rated this movie, looking for another one..."
+        //     );
+        //     this.randomMovie();
+        //   }, 500);
+        // }
+        if (api.status !== 200) {
+          console.log("Something went wrong, fetching another movie...");
           setTimeout(() => {
-            console.log(
-              "!!!Already rated this movie, looking for another one..."
-            );
             this.randomMovie();
           }, 500);
         } else {
+          const { chosenMovie } = api.data;
+          // chosenMovie.id = chosenMovie.id.toString();
           this.loading = false;
           this.movie = chosenMovie;
           this.$emit("setCachedMovie", chosenMovie);
