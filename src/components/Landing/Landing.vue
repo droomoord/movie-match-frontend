@@ -1,54 +1,38 @@
 <template>
-  <div>
-    <b-jumbotron>
-      <h1>MovieMatcher</h1>
-      <p>
-        Tof dat je de eerste versie van moviematcher wilt testen! Als het goed
-        is kan je al:
-      </p>
-      <p></p>
-      <ul>
-        <li>Een account aanmaken</li>
-        <li>Vrienden toevoegen</li>
-        <li>
-          Films beoordelen. Als je gaat voor het hartje (swipe naar rechts op
-          mobiel) dan wordt er gekeken of je een match met een vriend hebt.
-          Swipe naar links als je wilt disliken.
-        </li>
-        <li>
-          Klik op je naam en ga naar 'friends' en kijk met welke vrienden je
-          welke films kunt kijken.
-        </li>
-      </ul>
-      <p>
-        Wat nog niet werkt:
-      </p>
-      <ul>
-        <li>
-          Je kunt ook aangeven dat je de film al gezien hebt (oog met streep er
-          doorheen), of je kunt de film aan je favourites toevoegen (gele ster).
-          Op dit moment is daar nog geen functie aan verbonden
-        </li>
-      </ul>
-      <p>
-        Check even of er geen foutjes tot nu toe inzitten.
-      </p>
-      <ul>
-        <li>
-          Als het goed is kan je een film maar 1 keer raten, daarna komt ie niet
-          meer voobij
-        </li>
-        <li>Check of vrienden toevoegen goed werkt</li>
-        <li>Designfoutjes zullen er ook misschien wel inzitten</li>
-      </ul>
-    </b-jumbotron>
-    <b-container>
-      <b-alert fade variant="danger" :show="errorMessage !== ''">
-        {{ errorMessage }}
-      </b-alert>
+  <div class="landing">
+    <div alt="" class="background-image popcorn">
+      <div class="logo-container">
+        <div class="logo-wrapper">
+          <img src="@/assets/mm-logo-3.png" alt="" class="mm-logo" />
+          <div class="tmdb-logo-wrapper">
+            <h3>Powered by:</h3>
+            <a href="#"><tmdbLogoBig class="tmdb-logo"></tmdbLogoBig></a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="background-image watching">
+      <!-- <div class="tagline-container">
+        <div class="tagline-wrapper">
+          <ul>
+            <ol>
+              Register
+            </ol>
+            <ol>
+              Connect with friends
+            </ol>
+            <ol>
+              Rate a bunch of movies
+            </ol>
+          </ul>
+        </div>
+      </div> -->
+    </div>
+
+    <div class="form">
       <b-tabs content-class="mt-3">
         <b-tab title="Register" active @click="errorMessage = ''">
-          <b-form @submit="submitRegister">
+          <b-form @submit="submitRegister" class="register">
             <b-form-group label="Name">
               <b-form-input
                 v-model="register.name"
@@ -63,6 +47,7 @@
                 required
               ></b-form-input>
             </b-form-group>
+
             <b-form-group label="Password">
               <b-form-input
                 v-model="register.password"
@@ -78,6 +63,14 @@
               ></b-form-input>
             </b-form-group>
             <b-button type="submit">Submit</b-button>
+            <b-alert
+              fade
+              variant="danger"
+              :show="errorMessage !== ''"
+              dismissible
+            >
+              {{ errorMessage }}
+            </b-alert>
           </b-form>
         </b-tab>
         <b-tab title="Login" @click="errorMessage = ''">
@@ -97,18 +90,30 @@
               ></b-form-input>
             </b-form-group>
             <b-button type="submit">Submit</b-button>
+            <b-alert
+              fade
+              variant="danger"
+              :show="errorMessage !== ''"
+              dismissible
+            >
+              {{ errorMessage }}
+            </b-alert>
           </b-form>
         </b-tab>
       </b-tabs>
-    </b-container>
+    </div>
   </div>
 </template>
 
 <script>
 import fetchServerData from "../functions/fetchServerData";
+import tmdbLogoBig from "../utility/tmdb-logo-big";
 
 export default {
   name: "Landing",
+  components: {
+    tmdbLogoBig,
+  },
   data() {
     return {
       register: {
@@ -186,18 +191,129 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
+.landing {
+  overflow: hidden;
+}
+.background-image {
+  position: relative;
+  /* opacity: 0.65; */
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.popcorn {
+  width: 100vw;
+  height: 100vh;
+  background-image: url("~@/assets/popcorn.jpg");
+  z-index: 10;
+}
+
+.watching {
+  width: 100vw;
+  height: 100vh;
+  background-image: url("~@/assets/cinema.jpg");
+  z-index: 9;
+}
+/* .watching::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.475);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.9) 0%,
+    rgba(255, 255, 255, 0) 80%,
+    rgba(255, 255, 255, 0) 100%
+  );
+} */
+.logo-container {
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+}
+.logo-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100vw;
+  z-index: 10;
+}
+/* .tagline-container {
+  z-index: 1;
+  width: 100vw;
+  height: 50vh;
+  position: absolute;
+  top: 100vh;
+  left: 0;
+  z-index: 9;
+}
+.tagline-wrapper {
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9;
+  color: white;
+} */
+
+.tmdb-logo-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.mm-logo {
+  width: 300px;
+}
+.tmdb-logo {
+  width: 200px;
+}
+
 h3 {
   text-align: center;
+  mix-blend-mode: difference;
 }
-.container {
-  max-width: 600px !important;
+.form {
+  height: 60vh;
+  /* z-index: 110; */
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 0 20px;
+  padding-top: 50px;
+}
+.form button {
+  width: 80px;
 }
 .tab-content {
   border: 1px solid #dee2e6;
   border-top: none;
   padding: 20px;
-  position: relative;
+  /* position: relative; */
   top: -17px;
+}
+.register {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 10px;
+}
+.alert {
+  display: inline-flex;
+  margin-left: 20px;
 }
 </style>
