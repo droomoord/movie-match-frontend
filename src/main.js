@@ -4,6 +4,7 @@ import App from "./App.vue";
 import Landing from "./components/Landing/Landing";
 import Cockpit from "./components/Cockpit/Cockpit";
 import Friends from "./components/Friends/Friends";
+import Settings from "./components/Settings/Settings";
 
 import VueRouter from "vue-router";
 import { BootstrapVue, IconsPlugin } from "bootstrap-vue";
@@ -24,6 +25,7 @@ const routes = [
   { path: "/", component: Landing, name: "landing" },
   { path: "/rate", component: Cockpit, name: "cockpit" },
   { path: "/friends", component: Friends, name: "friends" },
+  { path: "/settings", component: Settings, name: "settings" },
 ];
 
 const router = new VueRouter({ routes });

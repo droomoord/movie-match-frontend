@@ -165,35 +165,7 @@ export default {
       try {
         this.loading = true;
         this.movieDetails = {};
-        const dateMax = this.randomDate();
-        const dateMin = moment(dateMax)
-          .subtract(1, "years")
-          .format("YYYY-MM-DD");
-        console.log(
-          `Looking for a movie with release date between ${dateMin} and ${dateMax}`
-        );
-
-        const api = await fetchServerData("post", "/movie/random", {
-          query: `/discover/movie?vote_average.gte=8&vote_count.gte=1000&primary_release_date.gte=${dateMin}&primary_release_date.lte=${dateMax}`,
-        });
-
-        // const chosenMovie = api.data.results[0];
-
-        // if (
-        //   this.user.dislikes.some((dislike) => dislike.id === chosenMovie.id) ||
-        //   this.user.seen.some((seen) => seen.id === chosenMovie.id) ||
-        //   this.user.favourites.some(
-        //     (favourite) => favourite.id === chosenMovie.id
-        //   ) ||
-        //   this.user.likes.some((like) => like.id === chosenMovie.id)
-        // ) {
-        //   setTimeout(() => {
-        //     console.log(
-        //       "!!!Already rated this movie, looking for another one..."
-        //     );
-        //     this.randomMovie();
-        //   }, 500);
-        // }
+        const api = await fetchServerData("post", "/movie/random");
         if (api.status !== 200) {
           console.log("Something went wrong, fetching another movie...");
           setTimeout(() => {
@@ -233,7 +205,6 @@ export default {
           },
         });
         if (api.status === 200) {
-          this.user[type].push(this.movie.id);
           console.log(`Succesfully added to ${type} `);
           if (api.data.matches && api.data.matches.length > 0) {
             this.matches = api.data.matches;
