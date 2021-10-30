@@ -10,6 +10,9 @@
       :cachedMovie="cachedMovie"
       @declineRequest="declineRequest"
       :key="reload"
+      @changedGenre="changedGenre"
+      @changedYear="changedYear"
+      :genres="genres"
     />
     <Modal @close="closeModal" v-if="modal">
       <div v-if="modalType === 'request'">
@@ -39,6 +42,7 @@
 <script>
 import fetchServerData from "./components/functions/fetchServerData";
 import Modal from "./components/utility/Modal";
+import moment from "moment";
 export default {
   name: "App",
   data() {
@@ -51,6 +55,7 @@ export default {
       configuration: {},
       cachedMovie: {},
       reload: 0,
+      genres: [],
     };
   },
 
@@ -71,8 +76,6 @@ export default {
     login: function(user) {
       console.log(user);
       this.user = user;
-      this.user.name =
-        this.user.name.charAt(0).toUpperCase() + this.user.name.slice(1);
       localStorage.setItem("user-id", user.id);
       this.$router.push({ path: "/rate" });
       this.getConfigurationTMDB();
@@ -216,6 +219,31 @@ export default {
       this.socket.close();
       this.$router.push({ path: "/" });
     },
+    changedGenre: function(id, name, checked) {
+      if (!checked) {
+        this.user.config.genres.forEach((genre, index) => {
+          if (id === genre.id) this.user.config.genres.splice(index, 1);
+        });
+      } else if (checked) {
+        this.user.config.genres.push({ id, name });
+      }
+    },
+    changedYear: function(type, value) {
+      this.user.config.date[type] = value.toString() + "-01-01";
+      if (
+        moment(this.user.config.date.min).diff(this.user.config.date.max) >= 0
+      ) {
+        if (type === "min") {
+          this.user.config.date.max = moment(this.user.config.date.min)
+            .add(1, "years")
+            .format("YYYY-MM-DD");
+        } else if (type === "max") {
+          this.user.config.date.min = moment(this.user.config.date.max)
+            .subtract(1, "years")
+            .format("YYYY-MM-DD");
+        }
+      }
+    },
   },
 
   mounted() {
@@ -224,6 +252,16 @@ export default {
       const user = localStorage.getItem("user-id");
       if (token && user) {
         this.getUser(user);
+        const getGenres = async () => {
+          try {
+            const { data } = await fetchServerData("get", "/movie/genres");
+            console.log(data);
+            this.genres = data.genres;
+          } catch (error) {
+            console.log(error);
+          }
+        };
+        getGenres();
       } else if (this.$router.history.current.path !== "/") {
         this.$router.push({ path: "/" });
       }
@@ -233,6 +271,9 @@ export default {
 </script>
 
 <style>
+:root {
+  --backgroundColor: rgb(26, 26, 26);
+}
 @font-face {
   font-family: "Broadway";
   src: local("Broadway"),
@@ -248,5 +289,12 @@ body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+@media only screen and (min-width: 601px) {
+  #app {
+    min-height: 100vh;
+    background-color: var(--backgroundColor);
+    padding-top: 20px;
+  }
 }
 </style>

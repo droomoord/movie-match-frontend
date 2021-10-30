@@ -6,6 +6,7 @@
       :configuration="configuration"
       @setCachedMovie="setCachedMovie"
       :cachedMovie="cachedMovie"
+      :genres="genres"
     />
   </div>
 </template>
@@ -16,7 +17,7 @@ import Matcher from "./Matcher/Matcher";
 export default {
   name: "Cockpit",
   components: { Navbar, Matcher },
-  props: ["user", "configuration", "cachedMovie"],
+  props: ["user", "configuration", "cachedMovie", "genres"],
   mounted() {
     if (!this.userIsLoggedIn) {
       this.$router.push("/");
@@ -37,7 +38,13 @@ export default {
 
 <style>
 .cockpit {
-  width: 100vw;
   min-height: -webkit-fill-available;
+}
+
+@media only screen and (min-width: 601px) {
+  .cockpit {
+    width: 100vw;
+    background-color: var(--backgroundColor);
+  }
 }
 </style>

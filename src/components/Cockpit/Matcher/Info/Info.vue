@@ -152,6 +152,21 @@ export default {
 </script>
 
 <style scoped>
+.info {
+  background-color: white !important;
+}
+img {
+  z-index: 1 !important;
+}
+.filter {
+  z-index: 2 !important;
+}
+.text {
+  z-index: 3 !important;
+}
+.back {
+  z-index: 2;
+}
 @media only screen and (max-width: 600px) {
   ul {
     padding-left: 0;

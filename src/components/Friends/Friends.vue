@@ -265,6 +265,7 @@ export default {
 
 .friends {
   margin: 20vh auto;
+  background-color: white;
 }
 .error {
   color: red;
@@ -304,5 +305,12 @@ li .b-icon {
 }
 .card {
   height: 400px;
+}
+@media only screen and (min-width: 601px) {
+  .friends {
+    margin: 20vh 10vw;
+    border-radius: 5px;
+    padding: 1em;
+  }
 }
 </style>

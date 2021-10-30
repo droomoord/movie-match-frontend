@@ -77,6 +77,14 @@
         </li>
       </ul>
     </Modal>
+    <Modal v-if="error" @close="randomMovie">
+      <div v-if="error === 'no movie found'">
+        Could not find a movie that maches your criteria. Change your settings
+        to get more results, or give it another go!
+        <a href="#/settings"><b-button>Settings</b-button></a>
+        <b-button @click="randomMovie">Refresh</b-button>
+      </div>
+    </Modal>
   </div>
 </template>
 
@@ -102,9 +110,10 @@ export default {
       matches: [],
       swipeStart: null,
       swipeEnd: null,
+      error: "",
     };
   },
-  props: ["user", "configuration", "cachedMovie"],
+  props: ["user", "configuration", "cachedMovie", "genres"],
   components: { Info, Loader, Modal },
 
   methods: {
@@ -163,25 +172,37 @@ export default {
     },
     randomMovie: async function() {
       try {
+        this.error = "";
         this.loading = true;
         this.movieDetails = {};
-        const api = await fetchServerData("post", "/movie/random");
-        if (api.status !== 200) {
-          console.log("Something went wrong, fetching another movie...");
-          setTimeout(() => {
-            this.randomMovie();
-          }, 500);
+        this.$emit("setCachedMovie", {});
+        const { date, genres, rating, voteCount } = this.user.config;
+        const genreIds1 = genres.map((genre) => genre.id);
+        const genreIds2 = this.genres.map((genre) => genre.id);
+        const filteredGenres = genreIds2.filter(
+          (id) => !genreIds1.includes(id)
+        );
+
+        const query = `?rating=${rating}&voteCount=${voteCount}&dateMin=${date.min}&dateMax=${date.max}&genres=${filteredGenres}`;
+
+        const api = await fetchServerData("get", `/movie/random${query}`);
+
+        if (api.status === 400) {
+          this.loading = false;
+          this.movie = {};
+          this.$emit("setCachedMovie", {});
+          this.error = "no movie found";
         } else {
           const { chosenMovie } = api.data;
-          // chosenMovie.id = chosenMovie.id.toString();
           this.loading = false;
           this.movie = chosenMovie;
           this.$emit("setCachedMovie", chosenMovie);
-          // this.clientX = null;
-          console.log(this.movie);
+          // console.log(this.movie);
         }
       } catch (error) {
-        if (error.response) console.log(error.response.data);
+        if (error.response) {
+          console.log(error.response.data);
+        }
       }
     },
     rate: async function(type) {
@@ -307,8 +328,10 @@ export default {
     padding: 50px 20px;
     width: 800px;
     margin: auto;
-    margin-top: 20px;
+    margin-top: 56px;
     height: 80vh;
+    background-color: white;
+    border-radius: 5px;
   }
   .text-wrapper {
     z-index: 1;
@@ -356,12 +379,15 @@ export default {
 
   .icons {
     position: fixed;
-    bottom: 10px;
+    bottom: 30px;
+    padding-top: 20px;
+    left: 0;
     display: flex;
-    margin: auto;
-    width: 80vw;
+    /* margin: auto; */
+    width: 100vw;
     justify-content: center;
     gap: 30px;
+    background-color: var(--backgroundColor);
   }
 
   .icons button,

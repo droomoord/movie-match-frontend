@@ -142,9 +142,11 @@ export default {
           this.displayError("Passwords don't match!");
         } else {
           const { name, password } = this.register;
+          const nameUpperCase = name.charAt(0).toUpperCase() + name.slice(1);
+
           const email = this.register.email.toLowerCase();
           const data = {
-            name,
+            name: nameUpperCase,
             email,
             password,
           };
